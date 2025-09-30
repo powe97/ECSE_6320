@@ -1,8 +1,10 @@
 #include"time.h"
 #include"stdio.h"
+#include"limits.h"
 #include"stdlib.h"
 #include"stdint.h"
 #include"x86intrin.h"
+#define STR(macro) (#macro)
 
 #ifndef RNGOFFSET
 #define RNGOFFSET 0
@@ -50,9 +52,9 @@ int main(/*int argc, const char** argv*/) {
 
     get_seeds(RNG_SEED, seeds, RUNS*2);
 
-    printf("parameters: runs = %u, arr_length = %u, rng_seed = %u\n", RUNS, ARR_LENGTH, RNG_SEED);
+    FILE* outfile = fopen("data.txt", "a");
+    fprintf(outfile, "== NOVECTORIZE=%d, NUMBER_T=%s, RUNS=%d, ARR_LENGTH=%u, STRIDE=%u ==\n", NOVECTORIZE, STR(NUMBER_T), RUNS, ARR_LENGTH, STRIDE);
 
-    uint64_t ticks_total = 0;
     for(unsigned i = 0; i < RUNS; i++) {
         number_t arr[ARR_LENGTH];
         number_t coeff = 0.0;
@@ -64,11 +66,9 @@ int main(/*int argc, const char** argv*/) {
         uint64_t tick_after = get_tick();
         uint64_t tick_diff = tick_after-tick_before;
 
-        ticks_total += tick_diff;
+        fprintf(outfile, "Computed y=%f in %lu ticks\n", y, tick_diff);
     }
-    printf("axpy: avg tick runtime: %f\n", ((double)ticks_total)/RUNS);
 
-    ticks_total = 0;
     for(unsigned i = 0; i < RUNS; i++) {
         number_t a[ARR_LENGTH];
         number_t b[ARR_LENGTH];
@@ -80,11 +80,9 @@ int main(/*int argc, const char** argv*/) {
         uint64_t tick_after = get_tick();
         uint64_t tick_diff = tick_after-tick_before;
 
-        ticks_total += tick_diff;
+        fprintf(outfile, "Computed p=%f in %lu ticks\n", p, tick_diff);
     }
-    printf("dot product: avg tick runtime: %f\n", ((double)ticks_total)/RUNS);
 
-    ticks_total = 0;
     for(unsigned i = 0; i < RUNS; i++) {
         number_t a[ARR_LENGTH];
         number_t b[ARR_LENGTH];
@@ -96,9 +94,10 @@ int main(/*int argc, const char** argv*/) {
         uint64_t tick_after = get_tick();
         uint64_t tick_diff = tick_after-tick_before;
 
-        ticks_total += tick_diff;
+        fprintf(outfile, "Computed c=[%f, ..., %f] in %lu ticks\n", c[0], c[ARR_LENGTH-1], tick_diff);
     }
-    printf("elementwise multiply: avg tick runtime: %f\n", ((double)ticks_total)/RUNS);
+
+    fclose(outfile);
 }
 
 // Wrapper in case I want to change this later
@@ -142,7 +141,7 @@ void prep_array(number_t* a, unsigned length, unsigned seed, number_t scale_fact
     srand(seed);
     for(unsigned i = 0; i < length; i++) {
         // from Stackoverflow, to generate random float
-        a[i] = scale_factor*((number_t)rand() / (number_t)(RAND_MAX));
+        a[i] = scale_factor*((number_t)rand() / (number_t)(RAND_MAX)) - scale_factor/2;
     }
 }
 

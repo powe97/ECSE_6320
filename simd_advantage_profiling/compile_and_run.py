@@ -12,7 +12,7 @@ MACRO_FLAGS = {
     # Which number type to use
     "NUMBER_T": ["float32", "float64"],
     # How many iterations to run
-    "_RUNS": ["2000"],
+    "_RUNS": ["5"],
     # Length of the arrays. 512, 2048 are clean,
     #   521 and 1033 are deliberately not
     "_ARR_LENGTH": ["512", "2048", "521", "1033"],

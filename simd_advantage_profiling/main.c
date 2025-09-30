@@ -17,16 +17,20 @@ uint64_t get_tick() {
 }
 
 // SAXPY / AXPY: y <- ax + y
-number_t axpy(const number_t* x, number_t a, unsigned length) {
-    number_t y = 0;
-    for(unsigned s = 0; s < STRIDE; s++) {
-        for(unsigned i = s; i < length; i += STRIDE) {
-            y += a*x[i];
-        }
-    }
-    return y;
+#if NOVECTORIZE
+__attribute__((optnone))
+#endif
+number_t axpy(const number_t* x, number_t a, unsigned length) {\
+    number_t y = 0;\
+    for(unsigned s = 0; s < STRIDE; s++) {\
+        for(unsigned i = s; i < length; i += STRIDE) {\
+            y += a*x[i];\
+        }\
+    }\
+    return y;\
 }
 
+#if 0
 // Dot product / reduction: s <- \sum x_i y_i
 number_t dot_product(const number_t* x, const number_t* y, unsigned length) {
     number_t product = 0;
@@ -46,6 +50,7 @@ void elementwise_multiply(const number_t* x, const number_t* y, number_t* z, uns
         }
     }
 }
+#endif
 
 // Fill array in with random numbers using the given seed
 void prep_array(number_t* a, unsigned length, unsigned seed, number_t scale_factor) {
@@ -66,8 +71,8 @@ void get_seeds(unsigned main_seed, unsigned* seeds, unsigned how_many) {
 
 int main(int argc, const char** argv) {
     const unsigned RNG_SEED = (unsigned)time(NULL);
-    const unsigned ARR_LENGTH = 1024;
-    const unsigned RUNS = 128;
+    const unsigned ARR_LENGTH = 256;
+    const unsigned RUNS = 2000;
     unsigned seeds[RUNS];
 
     get_seeds(RNG_SEED, seeds, RUNS);
@@ -82,7 +87,7 @@ int main(int argc, const char** argv) {
         uint64_t tick_after = get_tick();
         uint64_t tick_diff = tick_after-tick_before;
 
-        // printf("Run %d, elapsed time in ticks: %lu, y = %f\n", i+1, tick_diff, y);
+        printf("Run %d, elapsed time in ticks: %lu, y = %f\n", i, tick_diff, y);
         ticks_total += tick_diff;
     }
     printf("Avg tick runtime: %f\n", ((double)ticks_total)/RUNS);

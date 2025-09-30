@@ -40,34 +40,53 @@ number_t dot_product(const number_t* x, const number_t* y, unsigned length) {
 // Elementwise multiply: z_i <- x_i * y_i
 void elementwise_multiply(const number_t* x, const number_t* y, number_t* z, unsigned length) {
     for(unsigned s = 0; s < STRIDE; s++) {
-        for(unsigned i = s; i < length; i += STRIDE) {
+           for(unsigned i = s; i < length; i += STRIDE) {
             z[i] += x[i] * y[i];
         }
     }
 }
 
 // Fill array in with random numbers using the given seed
-void prep_array(number_t* a, unsigned length, unsigned seed, number_t min, number_t max) {
+void prep_array(number_t* a, unsigned length, unsigned seed, number_t scale_factor) {
     srand(seed);
     for(unsigned i = 0; i < length; i++) {
         // from Stackoverflow, to generate random float
-        a[i] = (number_t)rand() / (number_t)(RAND_MAX);
+        a[i] = scale_factor*((number_t)rand() / (number_t)(RAND_MAX));
+    }
+}
+
+// Get a bunch of random seeds using the main random seed
+void get_seeds(unsigned main_seed, unsigned* seeds, unsigned how_many) {
+    srand(main_seed);
+    for(unsigned i = 0; i < how_many; i++) {
+        seeds[i] = rand();
     }
 }
 
 int main(int argc, const char** argv) {
-    const unsigned RNG_SEED = 123456;
-    const unsigned ARR_LENGTH = 128;
+    const unsigned RNG_SEED = 1234567;
+    const unsigned ARR_LENGTH = 16;
+    const unsigned RUNS = 12;
+    unsigned seeds[RUNS];
 
-    number_t arr[ARR_LENGTH];
+    get_seeds(RNG_SEED, seeds, RUNS);
 
-    prep_array(arr, ARR_LENGTH, RNG_SEED, -10, 10);
-    
-    uint64_t tick_before = get_tick();
-    number_t y = axpy(arr, 12.3, ARR_LENGTH);
-    uint64_t tick_after = get_tick();
+    for(unsigned i = 0; i < RUNS; i++) {
+        number_t arr[ARR_LENGTH];
+        prep_array(arr, ARR_LENGTH, seeds[i], 200);
+        
+        uint64_t tick_before = get_tick();
+        number_t y = axpy(arr, 12.3, ARR_LENGTH);
+        uint64_t tick_after = get_tick();
 
-    printf("Start tick: %lu\n", tick_before);
-    printf("End tick: %lu\n", tick_after);
-    printf("Elapsed time in ticks: %lu\n", tick_after-tick_before);
+        printf("Start tick: %lu\n", tick_before);
+        printf("End tick: %lu\n", tick_after);
+        printf("Elapsed time in ticks: %lu\n", tick_after-tick_before);
+
+        printf("array: [ ");
+        for(unsigned i = 0; i < ARR_LENGTH; i++) {
+            printf("%.2f ", arr[i]);
+        }
+        printf("]\ny = %f\n", y);
+    }
 }

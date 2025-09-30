@@ -1,3 +1,4 @@
+#include"time.h"
 #include"stdio.h"
 #include"stdlib.h"
 #include"stdint.h"
@@ -64,29 +65,25 @@ void get_seeds(unsigned main_seed, unsigned* seeds, unsigned how_many) {
 }
 
 int main(int argc, const char** argv) {
-    const unsigned RNG_SEED = 1234567;
-    const unsigned ARR_LENGTH = 16;
-    const unsigned RUNS = 12;
+    const unsigned RNG_SEED = (unsigned)time(NULL);
+    const unsigned ARR_LENGTH = 1024;
+    const unsigned RUNS = 128;
     unsigned seeds[RUNS];
 
     get_seeds(RNG_SEED, seeds, RUNS);
 
+    uint64_t ticks_total = 0;
     for(unsigned i = 0; i < RUNS; i++) {
         number_t arr[ARR_LENGTH];
         prep_array(arr, ARR_LENGTH, seeds[i], 200);
         
         uint64_t tick_before = get_tick();
-        number_t y = axpy(arr, 12.3, ARR_LENGTH);
+        number_t y = axpy(arr, 492.54, ARR_LENGTH);
         uint64_t tick_after = get_tick();
+        uint64_t tick_diff = tick_after-tick_before;
 
-        printf("Start tick: %lu\n", tick_before);
-        printf("End tick: %lu\n", tick_after);
-        printf("Elapsed time in ticks: %lu\n", tick_after-tick_before);
-
-        printf("array: [ ");
-        for(unsigned i = 0; i < ARR_LENGTH; i++) {
-            printf("%.2f ", arr[i]);
-        }
-        printf("]\ny = %f\n", y);
+        // printf("Run %d, elapsed time in ticks: %lu, y = %f\n", i+1, tick_diff, y);
+        ticks_total += tick_diff;
     }
+    printf("Avg tick runtime: %f\n", ((double)ticks_total)/RUNS);
 }

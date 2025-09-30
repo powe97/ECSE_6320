@@ -22,6 +22,12 @@ typedef float float32;
 typedef double float64;
 typedef NUMBER_T number_t;
 
+// Enum so that it's a compile-time constant
+const unsigned STRIDE = _STRIDE;
+enum { ARR_LENGTH = _ARR_LENGTH };
+const unsigned RUNS = _RUNS;
+const number_t RAND_SCALE_FACTOR = 200;
+
 // Helpers for running the tests
 uint64_t get_tick();
 void prep_array(number_t* a, unsigned length, unsigned seed, number_t scale_factor);
@@ -31,12 +37,6 @@ void get_seeds(unsigned main_seed, unsigned* seeds, unsigned how_many);
 OPT_DECORATION number_t axpy(const number_t* x, number_t a, unsigned length);
 OPT_DECORATION number_t dot_product(const number_t* x, const number_t* y, unsigned length);
 OPT_DECORATION void elementwise_multiply(const number_t* x, const number_t* y, number_t* z, unsigned length);
-
-// Enum so that it's a compile-time constant
-const unsigned STRIDE = 2;
-enum { ARR_LENGTH = 256 };
-const unsigned RUNS = 2000;
-const number_t RAND_SCALE_FACTOR = 200;
 
 // These are global to prevent clang from optimizing them out
 // It's ugly but so is the rest of the code
@@ -52,7 +52,6 @@ int main(/*int argc, const char** argv*/) {
 
     printf("parameters: runs = %u, arr_length = %u, rng_seed = %u\n", RUNS, ARR_LENGTH, RNG_SEED);
 
-    printf("running axpy\n");
     uint64_t ticks_total = 0;
     for(unsigned i = 0; i < RUNS; i++) {
         number_t arr[ARR_LENGTH];
@@ -67,9 +66,8 @@ int main(/*int argc, const char** argv*/) {
 
         ticks_total += tick_diff;
     }
-    printf("axpy: avg tick runtime: %f\n\n", ((double)ticks_total)/RUNS);
+    printf("axpy: avg tick runtime: %f\n", ((double)ticks_total)/RUNS);
 
-    printf("running dot product\n");
     ticks_total = 0;
     for(unsigned i = 0; i < RUNS; i++) {
         number_t a[ARR_LENGTH];
@@ -84,9 +82,8 @@ int main(/*int argc, const char** argv*/) {
 
         ticks_total += tick_diff;
     }
-    printf("dot product: avg tick runtime: %f\n\n", ((double)ticks_total)/RUNS);
+    printf("dot product: avg tick runtime: %f\n", ((double)ticks_total)/RUNS);
 
-    printf("running elementwise multiply\n");
     ticks_total = 0;
     for(unsigned i = 0; i < RUNS; i++) {
         number_t a[ARR_LENGTH];
@@ -101,7 +98,7 @@ int main(/*int argc, const char** argv*/) {
 
         ticks_total += tick_diff;
     }
-    printf("elementwise multiply: avg tick runtime: %f\n\n", ((double)ticks_total)/RUNS);
+    printf("elementwise multiply: avg tick runtime: %f\n", ((double)ticks_total)/RUNS);
 }
 
 // Wrapper in case I want to change this later

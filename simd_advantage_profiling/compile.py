@@ -16,18 +16,5 @@ def main():
         s = "_".join(flagset)
         compile(list(flagset), f"main-{s}.out")
 
-main()
-
-"""
-echo "COMPILING NO OPTIMIZE"
-clang $CFLAGS -DNOVECTORIZE -DRNGOFFSET=100 main.c -o main-no-optimize.out
-
-echo "COMPILING DEFAULT"
-clang $CFLAGS main.c -o main.out
-
-echo "NO OPTIMIZE"
-./main-no-optimize.out
-
-echo "DEFAULT"
-./main.out
-"""
+if __name__ == "__main__":
+    main()
